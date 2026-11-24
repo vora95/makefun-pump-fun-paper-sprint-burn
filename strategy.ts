@@ -195,15 +195,6 @@ export function createStrategy(params: Params = DEFAULT_PARAMS): Bot {
     for (const [mint, pos] of state.positions) {
       held.add(mint);
       if (pendingSell.has(mint)) continue;
-      const tape = tapes.get(mint);
-      // A coin that completed its bonding curve while we hold it is
-      // migrating off the curve: exit now instead of riding the
-      // migration/flatten. (The harness may also close it itself; a
-      // sell for tokens already closed is rejected at no cost.)
-      if (tape !== undefined && tape.complete) {
-        orders.push({ side: 'sell', mint, token_amount: pos.token_amount, max_slippage_bps: params.sellSlippageBps });
-        continue;
-      }
       const curve = state.curves.get(mint);
       const price = curve !== undefined ? priceOf(curve.virtual_quote_reserves, curve.virtual_token_reserves) : 0;
       if (price <= 0 || pos.token_amount <= 0n) continue;
